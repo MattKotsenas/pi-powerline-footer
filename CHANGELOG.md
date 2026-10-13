@@ -2,8 +2,10 @@
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-10-12
+
 ### Fixed
-- **Custom-message turns** — Avoid a `Cannot read properties of undefined (reading 'replace')` error when an extension starts a turn with a custom message on newer Pi versions. Preserve the last real user task for auto follow-up and Working Vibes. Thanks to [@gambtho](https://github.com/gambtho).
+- **Extension-started turns on Pi 1.2.0** — When another extension starts a turn with a custom message, such as a background job reporting that it finished, Powerline no longer fails with `Cannot read properties of undefined (reading 'replace')`. Auto follow-up and Working Vibes keep using your last real prompt. Thanks to [@gambtho](https://github.com/gambtho) for #248.
 
 ## [0.20.0] - 2026-10-10
 
