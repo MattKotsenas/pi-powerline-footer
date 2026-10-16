@@ -112,6 +112,11 @@ let workingMessageTheme: ThemeLike | null = null;
 let workingMessageColor: ColorValue | "rainbow" | undefined;
 
 function resolveModelSpec(modelSpec: string): (ParsedModelSpec & { model: Model<string>; thinkingLevel?: VibeThinkingLevel }) | null {
+  if (modelSpec.toLowerCase() === "auto") {
+    // ctx.model is read at generation time so /model switches and provider refreshes apply.
+    const model = extensionCtx?.model;
+    return model ? { provider: model.provider, modelId: model.id, model } : null;
+  }
   const parsed = parseModelSpec(modelSpec);
   if (!parsed || !extensionCtx) {
     return null;
@@ -720,9 +725,6 @@ export async function generateVibesBatch(
     return { success: false, count: 0, filePath, error: "Extension not initialized" };
   }
   
-  if (!parseModelSpec(config.modelSpec)) {
-    return { success: false, count: 0, filePath, error: "Invalid model spec" };
-  }
   const resolvedModel = resolveModelSpec(config.modelSpec);
   if (!resolvedModel) {
     return { success: false, count: 0, filePath, error: `Model not found: ${config.modelSpec}` };

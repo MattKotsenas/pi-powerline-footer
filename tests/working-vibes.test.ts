@@ -365,6 +365,75 @@ test("generateVibesBatch parses thinking suffix separately from model id", async
   }
 });
 
+test("auto model spec follows the session's active model at generation time", async () => {
+  const links = ensurePiModuleLinks();
+  const home = mkdtempSync(join(tmpdir(), "powerline-vibes-home-"));
+  const previousHome = process.env.HOME;
+  process.env.HOME = home;
+
+  try {
+    const { fauxAssistantMessage, fauxProvider } = await importFauxProviderTools();
+    const { generateVibesBatch, initVibeManager, setVibeModel } = await import("../working-vibes.ts");
+
+    const registration = fauxProvider({
+      provider: "session-provider",
+      models: [{ id: "session-model" }, { id: "switched-model" }],
+    });
+    const first = registration.getModel("session-model");
+    const second = registration.getModel("switched-model");
+    assert.ok(first && second);
+
+    const requestedModels: string[] = [];
+    const respond = (_context: unknown, _options: unknown, _state: unknown, requestModel: { id: string }) => {
+      requestedModels.push(requestModel.id);
+      return fauxAssistantMessage("Following the active way...");
+    };
+    registration.setResponses([respond, respond]);
+
+    let activeModel: typeof first | undefined = first;
+    initVibeManager({
+      get model() {
+        return activeModel;
+      },
+      sessionManager: { getSessionId: () => "auto-session" },
+      modelRegistry: {
+        find: () => undefined,
+        async getApiKeyAndHeaders() {
+          return { ok: true, apiKey: "test-key", headers: {} };
+        },
+        getProvider(provider: string) {
+          return provider === "session-provider" ? registration.provider : undefined;
+        },
+        async getProviderAuth() {
+          return { auth: { apiKey: "test-key" } };
+        },
+      },
+    });
+
+    assert.equal(setVibeModel("Auto"), true);
+
+    assert.equal((await generateVibesBatch("auto-first", 1)).success, true);
+    activeModel = second;
+    assert.equal((await generateVibesBatch("auto-switched", 1)).success, true);
+    assert.deepEqual(requestedModels, ["session-model", "switched-model"]);
+
+    activeModel = undefined;
+    const none = await generateVibesBatch("auto-none", 1);
+    assert.ok(!none.success && /Model not found/.test(none.error));
+
+    // Restore the default spec so later tests are unaffected
+    assert.equal(setVibeModel("openai-codex/gpt-5.6-luna:low"), true);
+  } finally {
+    if (previousHome === undefined) {
+      delete process.env.HOME;
+    } else {
+      process.env.HOME = previousHome;
+    }
+    rmSync(home, { recursive: true, force: true });
+    links.cleanup();
+  }
+});
+
 test("on-demand vibe generation includes a system prompt for providers that require instructions", async () => {
   const links = ensurePiModuleLinks();
   const home = mkdtempSync(join(tmpdir(), "powerline-vibes-home-"));

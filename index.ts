@@ -2790,6 +2790,17 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           ctx.ui.notify(`Current vibe model: ${getVibeModel()}`, "info");
           return;
         }
+        // "auto" follows the active session model
+        if (modelSpec.toLowerCase() === "auto") {
+          const persisted = setVibeModel("auto");
+          ctx.ui.notify(
+            persisted
+              ? "Vibe model set to: auto (follows active model)"
+              : "Vibe model set to: auto (not persisted; check settings.json)",
+            persisted ? "info" : "warning",
+          );
+          return;
+        }
         // Validate format (provider/modelId)
         if (!modelSpec.includes("/")) {
           ctx.ui.notify("Invalid model format. Use: provider/modelId (e.g., openai-codex/gpt-5.4-mini)", "error");
