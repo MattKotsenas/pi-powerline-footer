@@ -1586,8 +1586,8 @@ export default function powerlineFooter(pi: ExtensionAPI) {
   function sendPendingNow(): void {
     const pending = takePendingSend();
     if (!pending) return;
-    // Mirror the editor's compaction capture so a delayed prompt never lands in Pi's native compaction queue.
-    if (powerlineCompacting && currentCtx) {
+    // Mirror the editor's compaction capture: in queue mode a delayed prompt never lands in Pi's native compaction queue.
+    if (powerlineCompacting && config.queue.compactPromptMode === "queue" && currentCtx) {
       currentEditor?.addToHistory?.(pending.text);
       capturePostCompactPrompt(currentCtx, pending.text);
       return;
@@ -3389,7 +3389,8 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           }
         }
 
-        if (powerlineCompacting && !bashModeActive && (isSubmit || isFollowUpSubmit)) {
+        // Native mode leaves mid-compaction submits to Pi, which queues them and sends them when compaction ends.
+        if (powerlineCompacting && config.queue.compactPromptMode === "queue" && !bashModeActive && (isSubmit || isFollowUpSubmit)) {
           const text = editor.getExpandedText().trim();
           if (!text) {
             sendPendingNow();

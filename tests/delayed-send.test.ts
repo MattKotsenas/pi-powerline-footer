@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -54,6 +54,11 @@ async function editorHarness(t: test.TestContext, powerline: Record<string, unkn
     enter: () => editor.handleInput("\r"),
     escape: () => editor.handleInput("\x1b"),
     tick: (ms: number) => t.mock.timers.tick(ms),
+    startCompaction: () => handlers.get("session_before_compact")?.({}, ctx),
+    queued: () => {
+      const inbox = join(root, "powerline-footer", "inbox.jsonl");
+      return existsSync(inbox) ? readFileSync(inbox, "utf-8").split("\n").filter(Boolean).map((line) => JSON.parse(line).text) : [];
+    },
   };
 }
 
@@ -84,3 +89,21 @@ test("delayed prompts send after the delay, or right away on Enter with an empty
   h.enter();
   assert.deepEqual(h.sent, ["first", "second"]);
 });
+
+for (const [compactPromptMode, sent, queued] of [
+  ["queue", [], ["first", "second"]],
+  ["native", ["first", "second"], []],
+] as const) {
+  test(`prompts sent during compaction in ${compactPromptMode} compact prompt mode`, async (t) => {
+    const h = await editorHarness(t, { sendDelayMs: 4000, queue: { compactPromptMode } });
+    h.type("first");
+    h.enter();
+    await h.startCompaction();
+    h.tick(4000);
+    h.type("second");
+    h.enter();
+    h.enter();
+    assert.deepEqual(h.sent, sent);
+    assert.deepEqual(h.queued(), queued);
+  });
+}

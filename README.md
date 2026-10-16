@@ -76,7 +76,7 @@ Set `powerline.queue.compactPromptMode` to `"native"` if you want `/compact <tex
 }
 ```
 
-The default mode is `"queue"`, which preserves the existing compact-and-queue behavior.
+In `"native"` mode, messages you send while a compaction is running also go to Pi's own queue, which sends them when compaction ends, including when it fails. The default mode is `"queue"`, which holds them in Powerline's post-compaction queue as before.
 
 - `/powerline placement below` — move the primary powerline row below the editor
 - `/powerline placement above` — restore the default placement
