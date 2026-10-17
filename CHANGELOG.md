@@ -2,12 +2,19 @@
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-10-16
+
+### Highlights
+- Working vibes can follow whatever model your session is using, including after a `/model` switch.
+- In native compact prompt mode, messages you send during a compaction are no longer lost when the compaction fails.
+- The working indicator stays inside the editor frame instead of jumping to the row above it.
+
 ### Added
-- **Working vibes can follow the active session model** — Set `workingVibeModel` to `"auto"` (or run `/vibe model auto`) and vibe generation uses the model the session is currently on, switching live with `/model`. Handy when the configured vibe model sits on a different account or plan than the one you actively use. Thanks to [@kyrie2to11](https://github.com/kyrie2to11) for #251.
+- **Working vibes can follow your session's model** — Set `workingVibeModel` to `"auto"` (or run `/vibe model auto`) and working vibes use the model your session is on, following `/model` switches right away. Useful when your configured vibe model belongs to an account or plan you no longer use. Thanks to [@kyrie2to11](https://github.com/kyrie2to11) for #251.
 
 ### Fixed
-- **Native compact prompt mode covers messages sent during compaction** — With `powerline.queue.compactPromptMode: "native"`, messages typed or delayed-sent while a compaction is running now go to Pi's own compaction queue instead of Powerline's `post-compact` queue, so they still reach the session when compaction fails. The default `"queue"` mode is unchanged. Thanks to [@fank](https://github.com/fank) for reporting #250.
-- **Working indicator stays in the editor border** — Pi renders an embedded working, compaction, summarization, or retry status into the editor's top border, and a custom editor only gets one by opting in. The Powerline editor now opts in and reuses that border instead of laying a plain rule over it, so the indicator no longer moves out of the input frame to the status row above the editor. Thanks to [@joelleibow](https://github.com/joelleibow) for #249.
+- **Messages sent during compaction in native mode** — With `powerline.queue.compactPromptMode: "native"`, messages you type or send while a compaction is running now wait in Pi's own queue instead of Powerline's post-compaction queue. Pi sends them when the compaction ends, even if it failed, so they no longer get stuck as blocked. The default `"queue"` mode works as before. Thanks to [@fank](https://github.com/fank) for reporting #250.
+- **Working indicator stays in the editor border** — The working, compaction, and retry indicator now shows in the editor's top border, where Pi puts it, instead of moving to the status row above the editor. Thanks to [@joelleibow](https://github.com/joelleibow) for #249.
 
 ## [0.20.1] - 2026-10-12
 
