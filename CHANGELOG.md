@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Session token and cost totals include native tool, summary, explicit usage, and billed failure charges across all branches. Context and thinking stay on the active branch. Native usage replaces legacy subagent cost on the same result. Thanks to [@MattKotsenas](https://github.com/MattKotsenas) for reporting and contributing the accounting fix.
+
 ## [0.20.2] - 2026-10-16
 
 ### Highlights
